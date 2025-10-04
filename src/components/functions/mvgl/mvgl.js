@@ -5,18 +5,18 @@ import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment
 export class MVGL {
   constructor(canvas) {
     this.canvas = canvas;
-
     this.mouse = new THREE.Vector2(0, 0);
     this.targetRotation = new THREE.Vector2(0, 0);
     this.currentRotation = new THREE.Vector2(0, 0);
-
     this.init();
     this.animate = this.animate.bind(this);
     requestAnimationFrame(this.animate);
   }
 
   init() {
-    const cameraDistance = 3;
+    const baseDistance = 3;
+    const isMobile = window.innerWidth < 768;
+    const cameraDistance = isMobile ? 6 : baseDistance;
 
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0xeeeeee);
@@ -39,7 +39,6 @@ export class MVGL {
     this.renderer.physicallyCorrectLights = true;
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 0.85;
 
@@ -66,7 +65,6 @@ export class MVGL {
       "/model/silverfoil.glb",
       (gltf) => {
         this.model = gltf.scene;
-
         const box = new THREE.Box3().setFromObject(this.model);
         const center = new THREE.Vector3();
         box.getCenter(center);
@@ -77,7 +75,7 @@ export class MVGL {
           if (child.isMesh && child.material) {
             child.material.envMap = envMap;
             child.material.envMapIntensity = 0.6;
-            child.material.roughness = Math.max(child.material.roughness ?? 0.2, 0.4);
+            child.material.roughness = Math.max(child.material.roughness ?? 0.2, 0.4);//白飛び対策　消すな
             child.material.metalness = Math.min(child.material.metalness ?? 1.0, 0.8);
             child.material.needsUpdate = true;
             child.castShadow = true;
@@ -88,21 +86,30 @@ export class MVGL {
       },
       undefined,
       (error) => {
-        console.error("model err", error);
+        console.error("モデル読み込みに失敗:", error);
       }
     );
 
-    window.addEventListener("mousemove", (event) => {
+    const updateTiltFromPosition = (x, y) => {
       const rect = this.canvas.getBoundingClientRect();
-      const x = (event.clientX - rect.left) / rect.width;
-      const y = (event.clientY - rect.top) / rect.height;
-
-      this.mouse.x = (x - 0.5) * 2;
-      this.mouse.y = (y - 0.5) * 2;
-
+      const nx = (x - rect.left) / rect.width;
+      const ny = (y - rect.top) / rect.height;
+      this.mouse.x = (nx - 0.5) * 2;
+      this.mouse.y = (ny - 0.5) * 2;
       const tiltStrength = 0.4;
       this.targetRotation.x = this.mouse.y * tiltStrength;
       this.targetRotation.y = this.mouse.x * tiltStrength;
+    };
+
+    window.addEventListener("mousemove", (event) => {
+      updateTiltFromPosition(event.clientX, event.clientY);
+    });
+
+    this.canvas.addEventListener("touchmove", (event) => {
+      if (event.touches.length === 1) {
+        const touch = event.touches[0];
+        updateTiltFromPosition(touch.clientX, touch.clientY);//ドラッグ対応無理そうなのでとりあえずタッチで代用
+      }
     });
 
     window.addEventListener("resize", () => this.onWindowResize());
@@ -111,6 +118,8 @@ export class MVGL {
   onWindowResize() {
     const width = this.canvas.clientWidth;
     const height = this.canvas.clientHeight;
+    const isMobile = window.innerWidth < 768;
+    this.camera.position.z = isMobile ? 6 : 3;
     this.camera.aspect = width / height;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(width, height);
@@ -118,17 +127,14 @@ export class MVGL {
 
   animate() {
     requestAnimationFrame(this.animate);
-
     if (this.model) {
       this.currentRotation.x +=
         (this.targetRotation.x - this.currentRotation.x) * 0.1;
       this.currentRotation.y +=
         (this.targetRotation.y - this.currentRotation.y) * 0.1;
-
       this.model.rotation.x = this.currentRotation.x;
       this.model.rotation.y = this.currentRotation.y;
     }
-
     this.renderer.render(this.scene, this.camera);
   }
 
