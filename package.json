@@ -1,0 +1,26 @@
+{
+  "name": "special_rendering",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "gl-matrix": "^3.4.4",
+    "gsap": "^3.13.0",
+    "next": "15.5.3",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "sass": "^1.92.1",
+    "three": "^0.180.0"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "eslint": "^9",
+    "eslint-config-next": "15.5.3",
+    "glsl-shader-loader": "^0.1.6"
+  }
+}

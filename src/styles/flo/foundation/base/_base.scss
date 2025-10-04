@@ -1,0 +1,16 @@
+@use "@/styles/global" as *;
+
+
+
+html{
+    font-size: getVW(16);
+}
+
+.l-main{
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}

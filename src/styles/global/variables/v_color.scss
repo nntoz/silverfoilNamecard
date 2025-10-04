@@ -1,0 +1,12 @@
+$color: (
+    main: #e3e1e0,
+    base: #555,
+    accent:#000,
+    font:#000,
+    ovFont:#fff,
+    white:#fff
+);
+
+@function getColor($key) {
+    @return map-get($color, $key);
+}

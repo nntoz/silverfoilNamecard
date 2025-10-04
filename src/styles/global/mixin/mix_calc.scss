@@ -1,0 +1,19 @@
+@use "sass:math";
+
+// %を算出
+@function getPer($c, $p) {
+    $per: math.div(math.percentage(math.div($c, $p)) * 10, 10);
+    @return $per;
+}
+
+// pxをvwに変換
+@function getVW($size, $viewport: 1920) {
+    $rate: math.div(100, $viewport);
+    @return math.div($rate * $size * 1vw * 10, 10);
+}
+
+// pxをvhに変換
+@function getVH($size, $viewport:1080) {
+    $rate: math.div(100, $viewport);
+    @return math.div($rate * $size * 1vh * 10, 10);
+}
